@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ccc"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context="com.example.anjou.exotest.MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="网络资源播放测试" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioGroup
+            android:id="@+id/type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/mp3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="mp3" />
+
+            <RadioButton
+                android:id="@+id/wav"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="wav" />
+
+            <RadioButton
+                android:checked="true"
+                android:id="@+id/m4a"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="m4a" />
+
+            <RadioButton
+                android:id="@+id/mp32"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="打电话跟进录音mp3" />
+
+            <RadioButton
+                android:id="@+id/wav2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="摆放录音wav" />
+        </RadioGroup>
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/mp3_time_self"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0:00" />
+
+        <SeekBar
+            android:id="@+id/mp3_pro"
+            style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0:00" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="进度回调，不可操作" />
+
+    <com.google.android.exoplayer2.ui.DefaultTimeBar
+        android:id="@+id/mp3_de_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/mp3_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:onClick="mp3"
+            android:text="播放" />
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="log:" />
+
+    <TextView
+        android:id="@+id/mp3_debug"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
