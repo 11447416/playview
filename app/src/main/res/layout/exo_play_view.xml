@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+            android:id="@+id/play_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
+            android:layout_weight="1">
+
+        </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
+
+        <ProgressBar
+            android:id="@+id/play_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:max="100"
+            android:progress="20" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/play_controller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#aa000000"
+        android:orientation="vertical"
+        android:paddingTop="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/play_back"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:selectableItemBackground"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/back" />
+
+            <ImageButton
+                android:id="@+id/play_forward"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:selectableItemBackground"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/forward" />
+
+            <ImageButton
+                android:id="@+id/play_play"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:selectableItemBackground"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/pause" />
+
+            <ImageButton
+                android:id="@+id/play_next"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:selectableItemBackground"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/next" />
+
+            <ImageButton
+                android:id="@+id/play_full"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:selectableItemBackground"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/full" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/play_current"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="15dp"
+                android:text="00:00"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/play_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginRight="15dp"
+                android:text="00:00"
+                android:textColor="@android:color/white" />
+        </FrameLayout>
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/play_seek"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="50" />
+    </LinearLayout>
+
+</merge>

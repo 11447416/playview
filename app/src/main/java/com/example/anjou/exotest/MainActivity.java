@@ -117,6 +117,10 @@ public class MainActivity extends AppCompatActivity {
                 public void onTimelineChanged(Timeline timeline, Object manifest) {
                     Log.i(TAG, "onTimelineChanged: " + timeline.getPeriodCount());
                 }
+                @Override
+                public void onRepeatModeChanged(int repeatMode) {
+
+                }
 
                 @Override
                 public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
