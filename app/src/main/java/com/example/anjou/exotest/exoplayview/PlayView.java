@@ -48,9 +48,6 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private SimpleExoPlayer player;
     private int surfaceType = SURFACE_TYPE_SURFACE_VIEW;
 
-
-    private final StringBuilder formatBuilder;
-    private final Formatter formatter;
     private boolean statusLoop = false;
 
     public PlayView(Context context) {
@@ -114,8 +111,6 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
 
 
         componentListener = new ComponentListener();
-        formatBuilder = new StringBuilder();
-        formatter = new Formatter(formatBuilder, Locale.getDefault());
 
     }
 
@@ -153,8 +148,8 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             }
             long position = player.getCurrentPosition();
             long duration = player.getDuration();
-            tvCurrent.setText(Util.getStringForTime(formatBuilder, formatter, position));
-            tvAll.setText(Util.getStringForTime(formatBuilder, formatter, duration));
+            tvCurrent.setText(int2time(position));
+            tvAll.setText(int2time(duration));
             int progress = (int) ((double) position / (double) duration * 100f);
             seekBar.setProgress(progress);
             smallProgress.setProgress(progress);
@@ -225,6 +220,24 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         public void onRenderedFirstFrame() {
 
         }
+    }
+
+    /**
+     * 把毫秒转换成：1:20:30这里形式,一般用于声音视频的播放
+     *
+     * @param timeMs 毫秒
+     * @return
+     */
+    public static String int2time(long timeMs) {
+        StringBuilder mFormatBuilder = new StringBuilder();
+        Formatter mFormatter = new Formatter();
+        long totalSeconds = timeMs / 1000;
+        long seconds = totalSeconds % 60;
+        long minutes = (totalSeconds / 60) % 60;
+        long hours = totalSeconds / 3600;
+
+        mFormatBuilder.setLength(0);
+        return mFormatter.format("%02d:%02d:%02d", hours, minutes, seconds).toString();
     }
 
 }
