@@ -27,7 +27,7 @@ import java.util.Formatter;
 import java.util.Locale;
 
 public final class PlayView extends FrameLayout implements View.OnClickListener {
-
+    public static final int FAST_SEEK_MS = 15000;//快进快退的时间长度
     private final AspectRatioFrameLayout contentFrame;
     private final ProgressBar smallProgress;
     private final SeekBar seekBar;
@@ -151,8 +151,10 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             tvCurrent.setText(int2time(position));
             tvAll.setText(int2time(duration));
             int progress = (int) ((double) position / (double) duration * 100f);
-            seekBar.setProgress(progress);
-            smallProgress.setProgress(progress);
+            if (progress >= 0) {
+                seekBar.setProgress(progress);
+                smallProgress.setProgress(progress);
+            }
 
             int playbackState = player == null ? ExoPlayer.STATE_IDLE : player.getPlaybackState();
             if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
@@ -176,15 +178,34 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.play_back:
+                if (player != null) {
+                    long seekTo = player.getCurrentPosition() - FAST_SEEK_MS;
+                    if (seekTo < 0) {
+                        seekTo = 0;
+                    }
+                    player.seekTo(seekTo);
+                    //播放停止以后，返回开始播放，要重新启动时间循环
+                    if (!statusLoop) {
+                        statusLoop = true;
+                        post(getStatusLoop);
+                    }
+                }
                 break;
             case R.id.play_forward:
+                if (player != null) {
+                    long seekTo = player.getCurrentPosition() + FAST_SEEK_MS;
+                    if (seekTo > player.getDuration()) {
+                        seekTo = player.getDuration();
+                    }
+                    player.seekTo(seekTo);
+                }
                 break;
             case R.id.play_play:
                 if (player != null) {
-                    boolean onPlay=!player.getPlayWhenReady();
+                    boolean onPlay = !player.getPlayWhenReady();
                     player.setPlayWhenReady(onPlay);
-                    ibPlay.setImageResource(onPlay?R.drawable.pause:R.drawable.play);
-                    statusLoop =onPlay;
+                    ibPlay.setImageResource(onPlay ? R.drawable.pause : R.drawable.play);
+                    statusLoop = onPlay;
                     post(getStatusLoop);
                 }
                 break;
@@ -235,7 +256,12 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         long seconds = totalSeconds % 60;
         long minutes = (totalSeconds / 60) % 60;
         long hours = totalSeconds / 3600;
-
+        //避免加载的瞬间，时间不正常
+        if (totalSeconds < 0 || minutes < 0 || hours < 0) {
+            totalSeconds = 0;
+            minutes = 0;
+            hours = 0;
+        }
         mFormatBuilder.setLength(0);
         return mFormatter.format("%02d:%02d:%02d", hours, minutes, seconds).toString();
     }
