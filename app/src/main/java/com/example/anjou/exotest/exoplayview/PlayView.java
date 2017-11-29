@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.TextureView;
@@ -95,7 +96,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (!(statusLoop)) {
+                if (!statusLoop) {
                     statusLoop = true;
                     post(getStatusLoop);
                 }
@@ -143,6 +144,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private Runnable getStatusLoop = new Runnable() {
         @Override
         public void run() {
+            Log.i("ttttt", "run: ");
             if (player == null || !statusLoop) {
                 return;
             }
@@ -157,22 +159,24 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             }
 
             int playbackState = player == null ? ExoPlayer.STATE_IDLE : player.getPlaybackState();
-            if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
-                long delayMs;
-                if (player.getPlayWhenReady() && playbackState == ExoPlayer.STATE_READY) {
-                    delayMs = 1000 - (position % 1000);
-                    if (delayMs < 200) {
-                        delayMs += 1000;
-                    }
-                } else {
-                    delayMs = 1000;
+            long delayMs;
+            if (player.getPlayWhenReady() && playbackState == ExoPlayer.STATE_READY) {
+                delayMs = 1000 - (position % 1000);
+                if (delayMs < 200) {
+                    delayMs += 1000;
                 }
-                postDelayed(getStatusLoop, delayMs);
             } else {
-                statusLoop = false;
+                delayMs = 1000;
             }
+            postDelayed(getStatusLoop, delayMs);
         }
     };
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        statusLoop = false;
+    }
 
     @Override
     public void onClick(View view) {
