@@ -29,23 +29,23 @@ import java.util.Locale;
 
 public final class PlayView extends FrameLayout implements View.OnClickListener {
     public static final int FAST_SEEK_MS = 15000;//快进快退的时间长度
-    private final AspectRatioFrameLayout contentFrame;
-    private final ProgressBar smallProgress;
-    private final SeekBar seekBar;
-    private final LinearLayout controllerView;
-    private final ImageButton ibBack;
-    private final ImageButton ibForward;
-    private final ImageButton ibPlay;
-    private final ImageButton ibNext;
-    private final ImageButton ibFull;
-    private final TextView tvCurrent;
-    private final TextView tvAll;
+    private AspectRatioFrameLayout contentFrame;
+    private ProgressBar smallProgress;
+    private SeekBar seekBar;
+    private LinearLayout controllerView;
+    private ImageButton ibBack;
+    private ImageButton ibForward;
+    private ImageButton ibPlay;
+    private ImageButton ibNext;
+    private ImageButton ibFull;
+    private TextView tvCurrent;
+    private TextView tvAll;
 
 
     private static final int SURFACE_TYPE_SURFACE_VIEW = 1;
     private static final int SURFACE_TYPE_TEXTURE_VIEW = 2;
-    private final View surfaceView;
-    private final ComponentListener componentListener;
+    private View surfaceView;
+    private ComponentListener componentListener;
     private SimpleExoPlayer player;
     private int surfaceType = SURFACE_TYPE_SURFACE_VIEW;
 
@@ -61,6 +61,10 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
 
     public PlayView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initNormal(context);
+    }
+
+    private void initNormal(Context context) {
         LayoutInflater.from(context).inflate(R.layout.exo_play_view, this);
         setDescendantFocusability(FOCUS_AFTER_DESCENDANTS);
         contentFrame = findViewById(R.id.play_container);
@@ -112,7 +116,6 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
 
 
         componentListener = new ComponentListener();
-
     }
 
     public void setPlayer(SimpleExoPlayer player) {
@@ -144,7 +147,6 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private Runnable getStatusLoop = new Runnable() {
         @Override
         public void run() {
-            Log.i("ttttt", "run: ");
             if (player == null || !statusLoop) {
                 return;
             }
@@ -158,17 +160,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                 smallProgress.setProgress(progress);
             }
 
-            int playbackState = player == null ? ExoPlayer.STATE_IDLE : player.getPlaybackState();
-            long delayMs;
-            if (player.getPlayWhenReady() && playbackState == ExoPlayer.STATE_READY) {
-                delayMs = 1000 - (position % 1000);
-                if (delayMs < 200) {
-                    delayMs += 1000;
-                }
-            } else {
-                delayMs = 1000;
-            }
-            postDelayed(getStatusLoop, delayMs);
+            postDelayed(getStatusLoop, 1000);
         }
     };
 
