@@ -1,9 +1,13 @@
 
 package com.example.anjou.exotest.exoplayview;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +15,8 @@ import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -50,6 +56,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private int surfaceType = SURFACE_TYPE_SURFACE_VIEW;
 
     private boolean statusLoop = false;
+    private Activity activity;
 
     public PlayView(Context context) {
         this(context, null);
@@ -59,10 +66,75 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         this(context, attrs, 0);
     }
 
-    public PlayView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public PlayView(final Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        this.activity = (Activity) context;
+        //播放界面，不使用ActionBar
+        if (activity instanceof AppCompatActivity) {
+            ((AppCompatActivity) activity).getSupportActionBar().hide();
+        }
         initNormal(context);
+//        postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        setFull(false);
+//                    }
+//                }, 3000);
+//                setFull(true);
+//            }
+//        }, 3000);
+
     }
+
+    private void setFull(boolean isFull) {
+        View decorView = activity.getWindow().getDecorView();
+        if (isFull) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        } else {
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            decorView.setSystemUiVisibility(
+                    ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            & ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            & ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            & ~View.SYSTEM_UI_FLAG_FULLSCREEN
+                            & ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        }
+    }
+//
+//    private void initFull(Context context) {
+//        Activity activity = (Activity) context;
+//        ViewGroup content = activity.findViewById(android.R.id.content);
+//        content.removeViewAt(0);
+////        content.setVisibility(INVISIBLE);
+//        TextView textView = new TextView(context);
+//        textView.setTextSize(30);
+//        textView.setBackgroundColor(Color.RED);
+//        textView.setText("全屏");
+//        content.addView(textView);
+//        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        if (activity instanceof AppCompatActivity) {
+//            ((AppCompatActivity) activity).getSupportActionBar().hide();
+//        }
+//        View decorView = activity.getWindow().getDecorView();
+//        decorView.setSystemUiVisibility(
+//                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+//        );
+//    }
 
     private void initNormal(Context context) {
         LayoutInflater.from(context).inflate(R.layout.exo_play_view, this);
