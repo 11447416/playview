@@ -15,7 +15,8 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
  */
 
 public class PlayEventListener implements Player.EventListener {
-    public  final String TAG=this.getClass().getName();
+    public final String TAG = this.getClass().getName();
+
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         Log.d(TAG, "onTimelineChanged() called with: timeline = [" + timeline + "], manifest = [" + manifest + "]");
@@ -28,12 +29,12 @@ public class PlayEventListener implements Player.EventListener {
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-
+        Log.d(TAG, "onLoadingChanged() called with: isLoading = [" + isLoading + "]");
     }
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-
+        Log.d(TAG, "onPlayerStateChanged() called with: playWhenReady = [" + playWhenReady + "], playbackState = [" + playbackState + "]");
     }
 
     @Override

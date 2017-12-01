@@ -38,17 +38,75 @@
         android:visibility="gone" />
 
     <LinearLayout
+        android:id="@+id/play_error"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@drawable/play_circle_lock_bg"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <ImageView
+            android:id="@+id/perr"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/play_error" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:text="加载出错"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/play_loading"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@drawable/play_circle_lock_bg"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <ProgressBar
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/play_unlock" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:text="加载中"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/title_container"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:background="#aa000000"
         android:orientation="horizontal">
+
         <LinearLayout
-            android:visibility="gone"
             android:id="@+id/title_back_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
+
             <ImageButton
                 android:id="@+id/title_back"
                 android:layout_width="wrap_content"
@@ -58,6 +116,7 @@
                 android:padding="10dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/play_title_back" />
+
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -70,8 +129,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center|left"
-            android:paddingRight="5dp"
             android:paddingLeft="5dp"
+            android:paddingRight="5dp"
             android:singleLine="true"
             android:text="标题标题测试标题测试标题测试标题测试标题测试标题测试测试"
             android:textColor="@android:color/white"

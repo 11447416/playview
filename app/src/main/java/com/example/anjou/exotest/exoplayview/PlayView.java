@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.TextureView;
@@ -24,7 +25,11 @@ import android.widget.TextView;
 import com.example.anjou.exotest.R;
 import com.example.anjou.exotest.exoplayview.listener.LoadEventListener;
 import com.example.anjou.exotest.exoplayview.listener.PlayEventListener;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -32,9 +37,12 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+
+import java.io.IOException;
 
 public final class PlayView extends FrameLayout implements View.OnClickListener {
     public static final int FAST_SEEK_MS = 15000;//快进快退的时间长度
@@ -54,6 +62,8 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private TextView tvAll;
     private LinearLayout llTitleContainer;
     private LinearLayout llTitleBackContainer;
+    private LinearLayout llNoteError;
+    private LinearLayout llNoteLoading;
 
 
     private static final int SURFACE_TYPE_SURFACE_VIEW = 1;
@@ -160,6 +170,8 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         tvAll = (TextView) findViewById(R.id.play_all);
         llTitleContainer = (LinearLayout) findViewById(R.id.title_container);
         llTitleBackContainer = (LinearLayout) findViewById(R.id.title_back_container);
+        llNoteError = (LinearLayout) findViewById(R.id.play_error);
+        llNoteLoading = (LinearLayout) findViewById(R.id.play_loading);
 
         ibBack.setOnClickListener(this);
         ibForward.setOnClickListener(this);
@@ -210,14 +222,39 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     public void play(String url) {
         if (player != null) {
             player.release();
+        } else {
+            BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+            TrackSelector trackSelector = new DefaultTrackSelector(bandwidthMeter);
+            player = ExoPlayerFactory.newSimpleInstance(activity, trackSelector);
+            player.addListener(new PlayEventListener() {
+                @Override
+                public void onPlayerError(ExoPlaybackException error) {
+                    llNoteError.setVisibility(VISIBLE);
+                    llNoteLoading.setVisibility(GONE);
+                }
+
+                @Override
+                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                    if (playbackState == Player.STATE_IDLE) {
+                        //没有加载，或者加载出错
+                        llNoteLoading.setVisibility(GONE);
+                    } else if (playbackState == Player.STATE_BUFFERING) {
+                        //视频缓冲中
+                        llNoteLoading.setVisibility(VISIBLE);
+                        llNoteError.setVisibility(GONE);
+                    } else if (playbackState == Player.STATE_READY) {
+                        //视频正在播放
+                        llNoteError.setVisibility(GONE);
+                        llNoteLoading.setVisibility(GONE);
+                    } else if (playbackState == Player.STATE_ENDED) {
+                        //视频播放完毕
+
+                    }
+                }
+            });
+            player.setPlayWhenReady(true);
         }
-        // 1. Create a default TrackSelector
-        BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-        TrackSelector trackSelector = new DefaultTrackSelector(bandwidthMeter);
-        // 3. Create the player
-        player = ExoPlayerFactory.newSimpleInstance(activity, trackSelector);
-        player.addListener(new PlayEventListener());
-        player.setPlayWhenReady(true);
+
 
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(activity,
                 Util.getUserAgent(activity, "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"));
@@ -226,11 +263,12 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         setPlayer(player);
     }
 
+    //停止播放，释放资源
     public void release() {
+        statusLoop = false;
         if (player != null) {
             player.release();
             player = null;
-            statusLoop = false;
         }
     }
 
@@ -270,12 +308,18 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             }
             long position = player.getCurrentPosition();
             long duration = player.getDuration();
+            long buffer = player.getBufferedPosition();
             tvCurrent.setText(int2time(position));
             tvAll.setText(int2time(duration));
             int progress = (int) ((double) position / (double) duration * 100f);
+            int secondProgress = (int) ((double) buffer / (double) duration * 100f);
             if (progress >= 0) {
                 seekBar.setProgress(progress);
                 smallProgress.setProgress(progress);
+            }
+            if (secondProgress >= 0) {
+                seekBar.setSecondaryProgress(secondProgress);
+                smallProgress.setSecondaryProgress(secondProgress);
             }
 
             postDelayed(getStatusLoop, 1000);
@@ -285,7 +329,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        statusLoop = false;
+        release();
     }
 
     @Override
