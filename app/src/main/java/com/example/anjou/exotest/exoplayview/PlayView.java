@@ -4,6 +4,8 @@ package com.example.anjou.exotest.exoplayview;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -20,8 +22,19 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.anjou.exotest.R;
+import com.example.anjou.exotest.exoplayview.listener.LoadEventListener;
+import com.example.anjou.exotest.exoplayview.listener.PlayEventListener;
+import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 
 public final class PlayView extends FrameLayout implements View.OnClickListener {
     public static final int FAST_SEEK_MS = 15000;//快进快退的时间长度
@@ -193,10 +206,40 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         tvTitleText.setText(title);
     }
 
-    public void setPlayer(SimpleExoPlayer player) {
-        if (this.player == player) {
-            return;
+    //通过传入视频url直接播放
+    public void play(String url) {
+        if (player != null) {
+            player.release();
         }
+        // 1. Create a default TrackSelector
+        BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+        TrackSelector trackSelector = new DefaultTrackSelector(bandwidthMeter);
+        // 3. Create the player
+        player = ExoPlayerFactory.newSimpleInstance(activity, trackSelector);
+        player.addListener(new PlayEventListener());
+        player.setPlayWhenReady(true);
+
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(activity,
+                Util.getUserAgent(activity, "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"));
+        HlsMediaSource source = new HlsMediaSource(Uri.parse(url), dataSourceFactory, new Handler(), new LoadEventListener());
+        player.prepare(source);
+        setPlayer(player);
+    }
+
+    public void release() {
+        if (player != null) {
+            player.release();
+            player = null;
+            statusLoop = false;
+        }
+    }
+
+    /**
+     * 通过传入 SimpleExoPlayer 执行播放
+     *
+     * @param player
+     */
+    public void setPlayer(SimpleExoPlayer player) {
         if (this.player != null) {
             this.player.removeVideoListener(componentListener);
             if (surfaceView instanceof TextureView) {
@@ -291,7 +334,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             case R.id.play_lock:
                 if (fullScreen) {
                     lock = !lock;
-                    ibLock.setImageResource(lock ? R.drawable.play_lock:R.drawable.play_unlock );
+                    ibLock.setImageResource(lock ? R.drawable.play_lock : R.drawable.play_unlock);
                     controllerView.setVisibility(lock ? GONE : VISIBLE);
                     llTitleContainer.setVisibility(lock ? GONE : VISIBLE);
                 }
