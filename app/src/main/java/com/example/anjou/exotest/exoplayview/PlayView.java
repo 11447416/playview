@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
@@ -420,6 +421,12 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     }
 
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        return super.onTouchEvent(event);
+    }
+
     private final class ComponentListener implements SimpleExoPlayer.VideoListener {
         @Override
         public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
@@ -428,7 +435,6 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                 contentFrame.setAspectRatio(aspectRatio);
             }
         }
-
         @Override
         public void onRenderedFirstFrame() {
 
