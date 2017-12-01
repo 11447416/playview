@@ -3,6 +3,7 @@ package com.example.anjou.exotest.exoplayview;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -57,6 +58,10 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
 
     private boolean statusLoop = false;
     private Activity activity;
+    private View normalView;
+    private Integer height;
+    private Integer width;
+    private boolean fullScreen = false;//是否是全屏模式
 
     public PlayView(Context context) {
         this(context, null);
@@ -74,23 +79,12 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             ((AppCompatActivity) activity).getSupportActionBar().hide();
         }
         initNormal(context);
-//        postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        setFull(false);
-//                    }
-//                }, 3000);
-//                setFull(true);
-//            }
-//        }, 3000);
-
     }
 
     private void setFull(boolean isFull) {
+        fullScreen = isFull;
         View decorView = activity.getWindow().getDecorView();
+        //设置是否是完全的沉浸式
         if (isFull) {
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             decorView.setSystemUiVisibility(
@@ -110,31 +104,34 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                             & ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             );
         }
+        //设置屏幕方向
+        if (isFull) {
+            //横屏设置
+            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            //竖屏设置
+            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        //设置画面大小
+        if (isFull) {
+            ViewGroup.LayoutParams layoutParams = getLayoutParams();
+            //保存之前的大小
+            if (width == null && height == null) {
+                height = layoutParams.height;
+                width = layoutParams.width;
+            }
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            setLayoutParams(layoutParams);
+        } else {
+            ViewGroup.LayoutParams layoutParams = getLayoutParams();
+            layoutParams.height = height;
+            layoutParams.width = width;
+            setLayoutParams(layoutParams);
+        }
+        //设置全屏按钮
+        ibFull.setImageResource(isFull ? R.drawable.refull : R.drawable.full);
     }
-//
-//    private void initFull(Context context) {
-//        Activity activity = (Activity) context;
-//        ViewGroup content = activity.findViewById(android.R.id.content);
-//        content.removeViewAt(0);
-////        content.setVisibility(INVISIBLE);
-//        TextView textView = new TextView(context);
-//        textView.setTextSize(30);
-//        textView.setBackgroundColor(Color.RED);
-//        textView.setText("全屏");
-//        content.addView(textView);
-//        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        if (activity instanceof AppCompatActivity) {
-//            ((AppCompatActivity) activity).getSupportActionBar().hide();
-//        }
-//        View decorView = activity.getWindow().getDecorView();
-//        decorView.setSystemUiVisibility(
-//                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-//                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-//                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-//        );
-//    }
 
     private void initNormal(Context context) {
         LayoutInflater.from(context).inflate(R.layout.exo_play_view, this);
@@ -280,6 +277,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             case R.id.play_next:
                 break;
             case R.id.play_full:
+                setFull(!fullScreen);
                 break;
             default:
                 //隐藏或者显示控制view
@@ -318,8 +316,6 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
      * @return
      */
     public static String int2time(long timeMs) {
-        StringBuilder mFormatBuilder = new StringBuilder();
-        Formatter mFormatter = new Formatter();
         long totalSeconds = timeMs / 1000;
         long seconds = totalSeconds % 60;
         long minutes = (totalSeconds / 60) % 60;
@@ -330,8 +326,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             minutes = 0;
             hours = 0;
         }
-        mFormatBuilder.setLength(0);
-        return mFormatter.format("%02d:%02d:%02d", hours, minutes, seconds).toString();
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds).toString();
     }
 
 }
