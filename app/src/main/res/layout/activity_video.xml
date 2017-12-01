@@ -5,12 +5,12 @@
     android:layout_height="match_parent"
     android:background="#ccc"
     android:orientation="vertical"
-    tools:context="com.example.anjou.exotest.MainActivity">
+    tools:context=".VideoActivity">
 
     <com.example.anjou.exotest.exoplayview.PlayView
         android:id="@+id/play"
         android:layout_width="match_parent"
-        android:layout_height="200dp"></com.example.anjou.exotest.exoplayview.PlayView>
+        android:layout_height="202dp"></com.example.anjou.exotest.exoplayview.PlayView>
 
     <View
         android:layout_width="match_parent"

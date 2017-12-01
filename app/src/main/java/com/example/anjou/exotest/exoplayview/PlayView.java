@@ -4,19 +4,13 @@ package com.example.anjou.exotest.exoplayview;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -26,13 +20,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.anjou.exotest.R;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.google.android.exoplayer2.util.Util;
-
-import java.util.Formatter;
-import java.util.Locale;
 
 public final class PlayView extends FrameLayout implements View.OnClickListener {
     public static final int FAST_SEEK_MS = 15000;//快进快退的时间长度
@@ -45,8 +34,12 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private ImageButton ibPlay;
     private ImageButton ibNext;
     private ImageButton ibFull;
+    private ImageButton ibTitleBack;
+    private ImageButton ibLock;
+    private TextView tvTitleText;
     private TextView tvCurrent;
     private TextView tvAll;
+    private LinearLayout llTitleContainer;
 
 
     private static final int SURFACE_TYPE_SURFACE_VIEW = 1;
@@ -58,10 +51,10 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
 
     private boolean statusLoop = false;
     private Activity activity;
-    private View normalView;
     private Integer height;
     private Integer width;
     private boolean fullScreen = false;//是否是全屏模式
+    private boolean lock = false;//屏幕是否锁定
 
     public PlayView(Context context) {
         this(context, null);
@@ -130,7 +123,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             setLayoutParams(layoutParams);
         }
         //设置全屏按钮
-        ibFull.setImageResource(isFull ? R.drawable.refull : R.drawable.full);
+        ibFull.setImageResource(isFull ? R.drawable.paly_control_refull : R.drawable.paly_control_full);
     }
 
     private void initNormal(Context context) {
@@ -146,14 +139,20 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         ibPlay = (ImageButton) findViewById(R.id.play_play);
         ibNext = (ImageButton) findViewById(R.id.play_next);
         ibFull = (ImageButton) findViewById(R.id.play_full);
+        ibTitleBack = (ImageButton) findViewById(R.id.title_back);
+        ibLock = (ImageButton) findViewById(R.id.play_lock);
+        tvTitleText = (TextView) findViewById(R.id.title_text);
         tvCurrent = (TextView) findViewById(R.id.play_current);
         tvAll = (TextView) findViewById(R.id.play_all);
+        llTitleContainer = (LinearLayout) findViewById(R.id.title_container);
 
         ibBack.setOnClickListener(this);
         ibForward.setOnClickListener(this);
         ibPlay.setOnClickListener(this);
         ibNext.setOnClickListener(this);
         ibFull.setOnClickListener(this);
+        ibLock.setOnClickListener(this);
+        ibTitleBack.setOnClickListener(this);
         this.setOnClickListener(this);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -185,6 +184,11 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
 
 
         componentListener = new ComponentListener();
+    }
+
+    //设置标题
+    private void setTitle(String title) {
+        tvTitleText.setText(title);
     }
 
     public void setPlayer(SimpleExoPlayer player) {
@@ -269,7 +273,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                 if (player != null) {
                     boolean onPlay = !player.getPlayWhenReady();
                     player.setPlayWhenReady(onPlay);
-                    ibPlay.setImageResource(onPlay ? R.drawable.pause : R.drawable.play);
+                    ibPlay.setImageResource(onPlay ? R.drawable.paly_control_pause : R.drawable.paly_control_play);
                     statusLoop = onPlay;
                     post(getStatusLoop);
                 }
@@ -277,16 +281,48 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             case R.id.play_next:
                 break;
             case R.id.play_full:
+            case R.id.title_back:
                 setFull(!fullScreen);
+                ibLock.setVisibility(fullScreen ? VISIBLE : GONE);
+                break;
+            case R.id.play_lock:
+                if (fullScreen) {
+                    lock = !lock;
+                    ibLock.setImageResource(lock ? R.drawable.play_lock:R.drawable.play_unlock );
+                    controllerView.setVisibility(lock ? GONE : VISIBLE);
+                    llTitleContainer.setVisibility(lock ? GONE : VISIBLE);
+                }
                 break;
             default:
                 //隐藏或者显示控制view
-                if (controllerView.getVisibility() == VISIBLE) {
-                    controllerView.setVisibility(GONE);
-                    smallProgress.setVisibility(VISIBLE);
+                if (fullScreen) {
+                    if (lock) {
+                        //锁定的时候
+                        ibLock.setVisibility(ibLock.getVisibility() == GONE ? VISIBLE : GONE);
+                    } else {
+                        //没有锁定，就是所有的提示显示或者隐藏
+                        if (controllerView.getVisibility() == VISIBLE) {
+                            controllerView.setVisibility(GONE);
+                            smallProgress.setVisibility(VISIBLE);
+                            llTitleContainer.setVisibility(GONE);
+                            ibLock.setVisibility(GONE);
+                        } else {
+                            controllerView.setVisibility(VISIBLE);
+                            smallProgress.setVisibility(GONE);
+                            llTitleContainer.setVisibility(VISIBLE);
+                            ibLock.setVisibility(VISIBLE);
+                        }
+                    }
                 } else {
-                    controllerView.setVisibility(VISIBLE);
-                    smallProgress.setVisibility(GONE);
+                    if (controllerView.getVisibility() == VISIBLE) {
+                        controllerView.setVisibility(GONE);
+                        smallProgress.setVisibility(VISIBLE);
+                        llTitleContainer.setVisibility(GONE);
+                    } else {
+                        controllerView.setVisibility(VISIBLE);
+                        smallProgress.setVisibility(GONE);
+                        llTitleContainer.setVisibility(VISIBLE);
+                    }
                 }
                 break;
 

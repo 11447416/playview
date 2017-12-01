@@ -24,6 +24,54 @@
             android:max="100" />
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/play_lock"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginLeft="10dp"
+        android:layout_gravity="center_vertical|left"
+        android:adjustViewBounds="true"
+        android:background="@drawable/play_circle_lock_bg"
+        android:padding="10dp"
+        android:visibility="gone"
+        android:scaleType="centerCrop"
+        android:src="@drawable/play_unlock" />
+
+    <LinearLayout
+        android:id="@+id/title_container"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#aa000000"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/title_back"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:background="?android:selectableItemBackground"
+            android:padding="10dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/play_title_back" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:background="#aa777777" />
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|left"
+            android:paddingRight="5dp"
+            android:singleLine="true"
+            android:text="标题标题测试标题测试标题测试标题测试标题测试标题测试测试"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/play_controller"
         android:layout_width="match_parent"
@@ -47,7 +95,7 @@
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/back" />
+                android:src="@drawable/paly_control_back" />
 
             <ImageButton
                 android:id="@+id/play_forward"
@@ -58,7 +106,7 @@
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/forward" />
+                android:src="@drawable/paly_control_forward" />
 
             <ImageButton
                 android:id="@+id/play_play"
@@ -69,7 +117,7 @@
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/pause" />
+                android:src="@drawable/paly_control_pause" />
 
             <ImageButton
                 android:id="@+id/play_next"
@@ -80,7 +128,7 @@
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/next" />
+                android:src="@drawable/paly_control_next" />
 
             <ImageButton
                 android:id="@+id/play_full"
@@ -91,7 +139,7 @@
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/full" />
+                android:src="@drawable/paly_control_full" />
         </LinearLayout>
 
         <FrameLayout
