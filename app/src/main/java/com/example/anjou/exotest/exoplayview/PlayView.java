@@ -40,6 +40,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private TextView tvCurrent;
     private TextView tvAll;
     private LinearLayout llTitleContainer;
+    private LinearLayout llTitleBackContainer;
 
 
     private static final int SURFACE_TYPE_SURFACE_VIEW = 1;
@@ -145,6 +146,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         tvCurrent = (TextView) findViewById(R.id.play_current);
         tvAll = (TextView) findViewById(R.id.play_all);
         llTitleContainer = (LinearLayout) findViewById(R.id.title_container);
+        llTitleBackContainer = (LinearLayout) findViewById(R.id.title_back_container);
 
         ibBack.setOnClickListener(this);
         ibForward.setOnClickListener(this);
@@ -284,6 +286,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             case R.id.title_back:
                 setFull(!fullScreen);
                 ibLock.setVisibility(fullScreen ? VISIBLE : GONE);
+                llTitleBackContainer.setVisibility(fullScreen ? VISIBLE : GONE);
                 break;
             case R.id.play_lock:
                 if (fullScreen) {

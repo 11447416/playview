@@ -28,14 +28,14 @@
         android:id="@+id/play_lock"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginLeft="10dp"
         android:layout_gravity="center_vertical|left"
+        android:layout_marginLeft="10dp"
         android:adjustViewBounds="true"
         android:background="@drawable/play_circle_lock_bg"
         android:padding="10dp"
-        android:visibility="gone"
         android:scaleType="centerCrop"
-        android:src="@drawable/play_unlock" />
+        android:src="@drawable/play_unlock"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/title_container"
@@ -43,22 +43,27 @@
         android:layout_height="40dp"
         android:background="#aa000000"
         android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/title_back"
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/title_back_container"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:background="?android:selectableItemBackground"
-            android:padding="10dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/play_title_back" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:background="#aa777777" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/title_back"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:background="?android:selectableItemBackground"
+                android:padding="10dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/play_title_back" />
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:background="#aa777777" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/title_text"
@@ -66,6 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center|left"
             android:paddingRight="5dp"
+            android:paddingLeft="5dp"
             android:singleLine="true"
             android:text="标题标题测试标题测试标题测试标题测试标题测试标题测试测试"
             android:textColor="@android:color/white"
