@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import com.example.anjou.exotest.R;
 import com.example.anjou.exotest.exoplayview.listener.LoadEventListener;
+import com.example.anjou.exotest.exoplayview.listener.OnNextEventListener;
 import com.example.anjou.exotest.exoplayview.listener.PlayEventListener;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -83,6 +84,9 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private Integer width;
     private boolean fullScreen = false;//是否是全屏模式
     private boolean lock = false;//屏幕是否锁定
+    private DataSource.Factory dataSourceFactory;
+    private Handler eventHandler;
+    private OnNextEventListener onNextEventListener;
 
     public PlayView(Context context) {
         this(context, null);
@@ -186,6 +190,8 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         ibLock.setOnClickListener(this);
         ibTitleBack.setOnClickListener(this);
         this.setOnClickListener(this);
+
+        eventHandler = new Handler();
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -253,7 +259,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                         llNoteLoading.setVisibility(GONE);
                     } else if (playbackState == Player.STATE_ENDED) {
                         //视频播放完毕
-
+                        next();
                     }
                 }
             });
@@ -261,21 +267,14 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         }
 
 
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(activity,
+        dataSourceFactory = new DefaultDataSourceFactory(activity,
                 Util.getUserAgent(activity, "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"));
-        HlsMediaSource source = new HlsMediaSource(Uri.parse(url), dataSourceFactory, new Handler(), new LoadEventListener());
+        eventHandler = new Handler();
+        HlsMediaSource source = new HlsMediaSource(Uri.parse(url), dataSourceFactory, eventHandler, new LoadEventListener());
         player.prepare(source);
         setPlayer(player);
     }
 
-    //停止播放，释放资源
-    public void release() {
-        statusLoop = false;
-        if (player != null) {
-            player.release();
-            player = null;
-        }
-    }
 
     /**
      * 通过传入 SimpleExoPlayer 执行播放
@@ -331,10 +330,43 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         }
     };
 
+    private void next() {
+        if (onNextEventListener != null) {
+            HlsMediaSource source = new HlsMediaSource(Uri.parse(onNextEventListener.onNextVideoUrl()), dataSourceFactory, eventHandler, new LoadEventListener());
+            player.prepare(source);
+        }
+    }
+
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         release();
+    }
+
+    //停止播放，释放资源
+    public void release() {
+        statusLoop = false;
+        if (player != null) {
+            player.release();
+            player = null;
+        }
+    }
+
+    public void pause() {
+        if (player != null) {
+            player.setPlayWhenReady(false);
+        }
+    }
+
+    public void start() {
+        if (player != null) {
+            player.setPlayWhenReady(true);
+        }
+    }
+
+    //设置播放下一视频的监听器
+    public void setOnNextEventListener(OnNextEventListener onNextEventListener) {
+        this.onNextEventListener = onNextEventListener;
     }
 
     @Override
@@ -373,6 +405,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                 }
                 break;
             case R.id.play_next:
+                next();
                 break;
             case R.id.play_full:
             case R.id.title_back:
@@ -431,9 +464,10 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private float oldValue;//老的原始的数值。
     private AudioManager mgr = null;
 
+    //手势操作控制
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (player == null||lock) {
+        if (player == null || lock) {
             return super.onTouchEvent(event);
         }
         float xDiff = event.getX() - startX;
@@ -442,10 +476,8 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             case MotionEvent.ACTION_DOWN:
                 startX = event.getX();
                 startY = event.getY();
-                Log.i(TAG, "onTouchEvent: ");
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.i(TAG, "onTouchEvent: " + xDiff + "," + yDiff);
                 if (action == 0) {
                     //触发滑动手势
                     if (Math.abs(xDiff) > minSide || Math.abs(yDiff) > minSide) {

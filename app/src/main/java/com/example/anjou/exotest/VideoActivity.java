@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.anjou.exotest.exoplayview.PlayView;
+import com.example.anjou.exotest.exoplayview.listener.OnNextEventListener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 
 public class VideoActivity extends AppCompatActivity {
@@ -26,11 +27,29 @@ public class VideoActivity extends AppCompatActivity {
 
     private void initPlay() {
         playView.play(videoUrl);
+        playView.setOnNextEventListener(new OnNextEventListener() {
+            @Override
+            public String onNextVideoUrl() {
+                return videoUrl;
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         playView.release();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        playView.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        playView.start();
     }
 }
