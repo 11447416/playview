@@ -4,6 +4,7 @@ package com.example.anjou.exotest.exoplayview;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -428,10 +429,11 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private float startX, startY;//开始的位置
     private static final int minSide = 20;//最小的滑动区间，也就是触发收拾的最小滑动距离
     private float oldValue;//老的原始的数值。
+    private AudioManager mgr = null;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (player == null) {
+        if (player == null||lock) {
             return super.onTouchEvent(event);
         }
         float xDiff = event.getX() - startX;
@@ -457,11 +459,15 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                             if (startX <= (width / 2.0f)) {
                                 //点击屏幕左半边,表示亮度
                                 action = 2;
-                                oldValue=activity.getWindow().getAttributes().screenBrightness;
+                                oldValue = activity.getWindow().getAttributes().screenBrightness;
                                 return true;
                             } else {
                                 //右边，表示音量
                                 action = 3;
+                                if (mgr == null) {
+                                    mgr = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+                                }
+                                oldValue = mgr.getStreamVolume(AudioManager.STREAM_MUSIC);
                                 return true;
                             }
                         }
@@ -479,10 +485,23 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                         }
                     } else if (action == 2) {
                         yDiff = yDiff > 0 ? yDiff - minSide : yDiff + minSide;
-                        float change=yDiff / getHeight();
-                        float brightness = setBrightness(oldValue+change);
+                        float change = yDiff / getHeight();
+                        float brightness = setBrightness(oldValue + change);
                         tvNote.setVisibility(VISIBLE);
-                        tvNote.setText(String.format("亮度%.0f%%", (brightness*100)));
+                        tvNote.setText(String.format("亮度%.0f%%", (brightness * 100)));
+                    } else if (action == 3) {
+                        yDiff = yDiff > 0 ? yDiff - minSide : yDiff + minSide;
+                        int maxVolume = mgr.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                        float change = yDiff / getHeight() * maxVolume;
+                        float value = oldValue + change;
+                        if (value < 0) {
+                            value = 0;
+                        } else if (value > maxVolume) {
+                            value = maxVolume;
+                        }
+                        mgr.setStreamVolume(AudioManager.STREAM_MUSIC, (int) value, 0);
+                        tvNote.setVisibility(VISIBLE);
+                        tvNote.setText(String.format("音量%.0f%%", (value / maxVolume * 100)));
                     }
                 }
                 break;
@@ -500,7 +519,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                     }
                     player.seekTo(position);
                 }
-                if(action!=0){
+                if (action != 0) {
                     action = 0;
                     return true;
                 }
