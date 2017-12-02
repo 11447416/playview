@@ -427,7 +427,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private int action = 0;//0,表示手势没有锁定，无动作，1，表示进度控制，2表示亮度，3表示音量
     private float startX, startY;//开始的位置
     private static final int minSide = 20;//最小的滑动区间，也就是触发收拾的最小滑动距离
-    private long oldValue;//老的原始的数值。
+    private float oldValue;//老的原始的数值。
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -435,7 +435,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
             return super.onTouchEvent(event);
         }
         float xDiff = event.getX() - startX;
-        float yDiff = event.getY() - startY;
+        float yDiff = -(event.getY() - startY);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startX = event.getX();
@@ -457,6 +457,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                             if (startX <= (width / 2.0f)) {
                                 //点击屏幕左半边,表示亮度
                                 action = 2;
+                                oldValue=activity.getWindow().getAttributes().screenBrightness;
                                 return true;
                             } else {
                                 //右边，表示音量
@@ -476,12 +477,18 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                         } else {
                             tvNote.setText(String.format("快退%02d秒", (int) -change));
                         }
+                    } else if (action == 2) {
+                        yDiff = yDiff > 0 ? yDiff - minSide : yDiff + minSide;
+                        float change=yDiff / getHeight();
+                        float brightness = setBrightness(oldValue+change);
+                        tvNote.setVisibility(VISIBLE);
+                        tvNote.setText(String.format("亮度%.0f%%", (brightness*100)));
                     }
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                if (action != 0) {
-                    tvNote.setVisibility(GONE);
+                tvNote.setVisibility(GONE);
+                if (action == 1) {
                     float change = xDiff / getWidth() * 60000;//滑动的时候，在1分钟内调整
                     long position = player.getCurrentPosition();
                     position += change;
@@ -492,6 +499,8 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                         position = player.getDuration();
                     }
                     player.seekTo(position);
+                }
+                if(action!=0){
                     action = 0;
                     return true;
                 }
@@ -535,4 +544,16 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         return String.format("%02d:%02d:%02d", hours, minutes, seconds).toString();
     }
 
+    //设置亮度的改变
+    public float setBrightness(float value) {
+        WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+        lp.screenBrightness = value;
+        if (lp.screenBrightness > 1) {
+            lp.screenBrightness = 1;
+        } else if (lp.screenBrightness < 0) {
+            lp.screenBrightness = 0;
+        }
+        activity.getWindow().setAttributes(lp);
+        return lp.screenBrightness;
+    }
 }
