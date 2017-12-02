@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -29,9 +28,7 @@ import com.example.anjou.exotest.exoplayview.listener.LoadEventListener;
 import com.example.anjou.exotest.exoplayview.listener.OnNextEventListener;
 import com.example.anjou.exotest.exoplayview.listener.PlayEventListener;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -40,12 +37,9 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
-
-import java.io.IOException;
 
 public final class PlayView extends FrameLayout implements View.OnClickListener {
     private final String TAG = this.getClass().getName();
@@ -249,6 +243,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                     if (playbackState == Player.STATE_IDLE) {
                         //没有加载，或者加载出错
                         llNoteLoading.setVisibility(GONE);
+                        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     } else if (playbackState == Player.STATE_BUFFERING) {
                         //视频缓冲中
                         llNoteLoading.setVisibility(VISIBLE);
@@ -264,6 +259,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                 }
             });
             player.setPlayWhenReady(true);
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
 
@@ -355,12 +351,14 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     public void pause() {
         if (player != null) {
             player.setPlayWhenReady(false);
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
     public void start() {
         if (player != null) {
             player.setPlayWhenReady(true);
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
@@ -402,6 +400,12 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                     ibPlay.setImageResource(onPlay ? R.drawable.paly_control_pause : R.drawable.paly_control_play);
                     statusLoop = onPlay;
                     post(getStatusLoop);
+                    if(onPlay){
+                        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    }else {
+
+                        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    }
                 }
                 break;
             case R.id.play_next:
@@ -508,7 +512,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                     //手势已经锁定，开始执行
                     if (action == 1) {
                         xDiff = xDiff > 0 ? xDiff - minSide : xDiff + minSide;
-                        float change = xDiff / getWidth() * 60;//滑动的时候，在1分钟内调整
+                        float change = xDiff / getWidth() * 120;//滑动的时候，在1分钟内调整
                         tvNote.setVisibility(VISIBLE);
                         if (xDiff > 0) {
                             tvNote.setText(String.format("快进%02d秒", (int) change));
