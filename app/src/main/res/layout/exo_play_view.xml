@@ -37,6 +37,7 @@
         android:src="@drawable/play_unlock"
         android:visibility="gone" />
 
+
     <LinearLayout
         android:id="@+id/play_error"
         android:layout_width="100dp"
@@ -44,7 +45,8 @@
         android:layout_gravity="center"
         android:background="@drawable/play_circle_lock_bg"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/perr"
@@ -238,4 +240,16 @@
             android:max="100" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/play_note_option"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/play_circle_lock_bg"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="15dp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:visibility="gone"/>
 </merge>

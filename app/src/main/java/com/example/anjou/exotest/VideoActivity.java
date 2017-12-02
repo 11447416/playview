@@ -11,7 +11,7 @@ public class VideoActivity extends AppCompatActivity {
     private SimpleExoPlayer player;
     private PlayView playView;
 
-    public static final String videoUrl = "http://192.168.0.29:3000/api/home/test/?vid=52167b014cbc49313656d6e5fdf24aee&tvid=826305300";
+    public static final String videoUrl = "http://192.168.31.128:3000/api/home/test/?vid=52167b014cbc49313656d6e5fdf24aee&tvid=826305300";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

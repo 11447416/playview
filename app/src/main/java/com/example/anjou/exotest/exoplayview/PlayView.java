@@ -46,6 +46,7 @@ import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
 
 public final class PlayView extends FrameLayout implements View.OnClickListener {
+    private final String TAG = this.getClass().getName();
     public static final int FAST_SEEK_MS = 15000;//快进快退的时间长度
     private AspectRatioFrameLayout contentFrame;
     private ProgressBar smallProgress;
@@ -61,6 +62,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     private TextView tvTitleText;
     private TextView tvCurrent;
     private TextView tvAll;
+    private TextView tvNote;
     private LinearLayout llTitleContainer;
     private LinearLayout llTitleBackContainer;
     private LinearLayout llNoteError;
@@ -169,6 +171,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         tvTitleText = (TextView) findViewById(R.id.title_text);
         tvCurrent = (TextView) findViewById(R.id.play_current);
         tvAll = (TextView) findViewById(R.id.play_all);
+        tvNote = (TextView) findViewById(R.id.play_note_option);
         llTitleContainer = (LinearLayout) findViewById(R.id.title_container);
         llTitleBackContainer = (LinearLayout) findViewById(R.id.title_back_container);
         llNoteError = (LinearLayout) findViewById(R.id.play_error);
@@ -421,9 +424,79 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
     }
 
 
+    private int action = 0;//0,表示手势没有锁定，无动作，1，表示进度控制，2表示亮度，3表示音量
+    private float startX, startY;//开始的位置
+    private static final int minSide = 20;//最小的滑动区间，也就是触发收拾的最小滑动距离
+    private long oldValue;//老的原始的数值。
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
+        if (player == null) {
+            return super.onTouchEvent(event);
+        }
+        float xDiff = event.getX() - startX;
+        float yDiff = event.getY() - startY;
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                startX = event.getX();
+                startY = event.getY();
+                Log.i(TAG, "onTouchEvent: ");
+                break;
+            case MotionEvent.ACTION_MOVE:
+                Log.i(TAG, "onTouchEvent: " + xDiff + "," + yDiff);
+                if (action == 0) {
+                    //触发滑动手势
+                    if (Math.abs(xDiff) > minSide || Math.abs(yDiff) > minSide) {
+                        //是进度手势
+                        if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                            action = 1;
+                            oldValue = player.getContentPosition();
+                            return true;
+                        } else {
+                            int width = getWidth();
+                            if (startX <= (width / 2.0f)) {
+                                //点击屏幕左半边,表示亮度
+                                action = 2;
+                                return true;
+                            } else {
+                                //右边，表示音量
+                                action = 3;
+                                return true;
+                            }
+                        }
+                    }
+                } else {
+                    //手势已经锁定，开始执行
+                    if (action == 1) {
+                        xDiff = xDiff > 0 ? xDiff - minSide : xDiff + minSide;
+                        float change = xDiff / getWidth() * 60;//滑动的时候，在1分钟内调整
+                        tvNote.setVisibility(VISIBLE);
+                        if (xDiff > 0) {
+                            tvNote.setText(String.format("快进%02d秒", (int) change));
+                        } else {
+                            tvNote.setText(String.format("快退%02d秒", (int) -change));
+                        }
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (action != 0) {
+                    tvNote.setVisibility(GONE);
+                    float change = xDiff / getWidth() * 60000;//滑动的时候，在1分钟内调整
+                    long position = player.getCurrentPosition();
+                    position += change;
+                    //判断是否超过结尾或者开头
+                    if (position <= 0) {
+                        position = 0;
+                    } else if (position > player.getDuration()) {
+                        position = player.getDuration();
+                    }
+                    player.seekTo(position);
+                    action = 0;
+                    return true;
+                }
+                break;
+        }
         return super.onTouchEvent(event);
     }
 
@@ -435,6 +508,7 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
                 contentFrame.setAspectRatio(aspectRatio);
             }
         }
+
         @Override
         public void onRenderedFirstFrame() {
 
@@ -453,8 +527,8 @@ public final class PlayView extends FrameLayout implements View.OnClickListener 
         long minutes = (totalSeconds / 60) % 60;
         long hours = totalSeconds / 3600;
         //避免加载的瞬间，时间不正常
-        if (totalSeconds < 0 || minutes < 0 || hours < 0) {
-            totalSeconds = 0;
+        if (seconds < 0 || minutes < 0 || hours < 0) {
+            seconds = 0;
             minutes = 0;
             hours = 0;
         }
